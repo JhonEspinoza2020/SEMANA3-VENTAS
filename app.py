@@ -18,7 +18,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Ruta para REGISTRAR (index.html)
 @app.route('/registrar', methods=['POST'])
 def registrar_venta():
     data = request.json
@@ -30,7 +29,6 @@ def registrar_venta():
     conn.close()
     return jsonify({"mensaje": "Venta registrada correctamente"})
 
-# Ruta para MOSTRAR (reporte.html)
 @app.route('/obtener_ventas', methods=['GET'])
 def obtener_ventas():
     conn = sqlite3.connect('ventas.db')
@@ -42,7 +40,6 @@ def obtener_ventas():
     ventas = [dict(fila) for fila in filas]
     return jsonify(ventas)
 
-# Ruta para ELIMINAR (Tu parte del trabajo)
 @app.route('/eliminar/<int:id>', methods=['DELETE'])
 def eliminar_venta(id):
     conn = sqlite3.connect('ventas.db')
@@ -51,6 +48,20 @@ def eliminar_venta(id):
     conn.commit()
     conn.close()
     return jsonify({"mensaje": "Registro eliminado correctamente"})
+
+# NUEVA RUTA: Para EDITAR (Modificar) un registro
+@app.route('/editar/<int:id>', methods=['PUT'])
+def editar_venta(id):
+    data = request.json
+    conn = sqlite3.connect('ventas.db')
+    c = conn.cursor()
+    c.execute('''UPDATE ventas 
+                 SET cliente = ?, producto = ?, cantidad = ?, precio = ?, total = ?
+                 WHERE id = ?''', 
+              (data['cliente'], data['producto'], data['cantidad'], data['precio'], data['total'], id))
+    conn.commit()
+    conn.close()
+    return jsonify({"mensaje": "Registro actualizado correctamente"})
 
 if __name__ == '__main__':
     init_db()

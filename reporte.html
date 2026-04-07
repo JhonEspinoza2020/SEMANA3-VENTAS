@@ -15,17 +15,12 @@
         .btn-volver { display: inline-block; margin-bottom: 20px; padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; }
         .btn-volver:hover { background-color: #5a6268; }
         
-        /* Estilos de tu nuevo botón Eliminar */
-        .btn-eliminar {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        /* Botones de acción */
+        .btn-eliminar { background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-left: 5px; }
         .btn-eliminar:hover { background-color: #c82333; }
+        
+        .btn-editar { background-color: #ffc107; color: black; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-editar:hover { background-color: #e0a800; }
     </style>
 </head>
 <body>
@@ -43,23 +38,23 @@
                     <th>Cantidad</th>
                     <th>Precio Unitario</th>
                     <th>Total</th>
-                    <th>Acciones</th> </tr>
+                    <th>Acciones</th>
+                </tr>
             </thead>
             <tbody id="cuerpoTabla">
-                </tbody>
+            </tbody>
         </table>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', cargarDatos);
 
-        // Separemos la carga de datos en una función para poder llamarla cuando borremos algo
         function cargarDatos() {
             fetch('http://localhost:5000/obtener_ventas')
                 .then(response => response.json())
                 .then(datos => {
                     const cuerpoTabla = document.getElementById('cuerpoTabla');
-                    cuerpoTabla.innerHTML = ''; // Limpiamos la tabla antes de cargar
+                    cuerpoTabla.innerHTML = ''; 
                     
                     if(datos.length === 0) {
                         cuerpoTabla.innerHTML = '<tr><td colspan="7" style="text-align: center;">No hay ventas registradas aún.</td></tr>';
@@ -68,7 +63,6 @@
 
                     datos.forEach(venta => {
                         const fila = document.createElement('tr');
-                        // Aquí agregamos tu botón de Eliminar que llama a la función eliminarVenta() pasándole el ID
                         fila.innerHTML = `
                             <td>${venta.id}</td>
                             <td>${venta.cliente}</td>
@@ -77,6 +71,7 @@
                             <td>S/ ${venta.precio.toFixed(2)}</td>
                             <td><strong>S/ ${venta.total.toFixed(2)}</strong></td>
                             <td>
+                                <button onclick="editarVenta(${venta.id}, '${venta.cliente}', '${venta.producto}', ${venta.cantidad}, ${venta.precio})" class="btn-editar">Editar</button>
                                 <button onclick="eliminarVenta(${venta.id})" class="btn-eliminar">Eliminar</button>
                             </td>
                         `;
@@ -86,23 +81,59 @@
                 .catch(error => console.error('Error:', error));
         }
 
-        // TU TAREA: Función para eliminar el registro
+        // Función para ELIMINAR
         function eliminarVenta(id) {
-            // Confirmación de seguridad
             if (confirm('¿Estás seguro de que deseas eliminar este registro?')) {
-                fetch(`http://localhost:5000/eliminar/${id}`, {
-                    method: 'DELETE'
-                })
+                fetch(`http://localhost:5000/eliminar/${id}`, { method: 'DELETE' })
                 .then(response => response.json())
-                .then(data => {
-                    alert(data.mensaje);
-                    cargarDatos(); // Volvemos a cargar la tabla para que el registro desaparezca al instante
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Hubo un error al intentar eliminar el registro.');
-                });
+                .then(data => { alert(data.mensaje); cargarDatos(); })
+                .catch(error => console.error('Error:', error));
             }
+        }
+
+        // Función para EDITAR
+        function editarVenta(id, clienteActual, productoActual, cantidadActual, precioActual) {
+            let nuevoCliente = prompt("Editar Cliente:", clienteActual);
+            if (nuevoCliente === null || nuevoCliente.trim() === "") return;
+
+            let nuevoProducto = prompt("Editar Producto:", productoActual);
+            if (nuevoProducto === null || nuevoProducto.trim() === "") return;
+
+            let nuevaCantidad = prompt("Editar Cantidad:", cantidadActual);
+            if (nuevaCantidad === null) return;
+
+            let nuevoPrecio = prompt("Editar Precio Unitario:", precioActual);
+            if (nuevoPrecio === null) return;
+
+            nuevaCantidad = parseFloat(nuevaCantidad);
+            nuevoPrecio = parseFloat(nuevoPrecio);
+
+            if (isNaN(nuevaCantidad) || nuevaCantidad <= 0 || isNaN(nuevoPrecio) || nuevoPrecio <= 0) {
+                alert("La cantidad y el precio deben ser números válidos mayores a 0.");
+                return;
+            }
+
+            let nuevoTotal = nuevaCantidad * nuevoPrecio;
+
+            const datosActualizados = {
+                cliente: nuevoCliente.trim(),
+                producto: nuevoProducto.trim(),
+                cantidad: nuevaCantidad,
+                precio: nuevoPrecio,
+                total: nuevoTotal
+            };
+
+            fetch(`http://localhost:5000/editar/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosActualizados)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.mensaje);
+                cargarDatos(); 
+            })
+            .catch(error => console.error('Error:', error));
         }
     </script>
 </body>
