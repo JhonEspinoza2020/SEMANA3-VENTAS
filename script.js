@@ -79,3 +79,26 @@ btnRegistrar.addEventListener('click', function() {
         alert('Error al conectar con el servidor Backend. ¿Está encendido Python?');
     });
 });
+
+// Botón Ver Registros
+const btnVerRegistros = document.getElementById('btnVerRegistros');
+if (btnVerRegistros) {
+    btnVerRegistros.addEventListener('click', function() {
+        window.location.href = 'reporte.html';
+    });
+}
+
+// Validación: solo letras para Cliente y Producto
+function soloLetras(e) {
+    var key = e.keyCode || e.which;
+    var tecla = String.fromCharCode(key);
+    var letras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]$/;
+    return letras.test(tecla);
+}
+
+// Validación: bloquear números negativos
+function validarNoNegativo(input) {
+    if (input.value < 0) {
+        input.value = 0;
+    }
+}
