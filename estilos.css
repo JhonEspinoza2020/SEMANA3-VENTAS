@@ -79,3 +79,12 @@ button {
 .btn-registrar:hover {
     background-color: #0056b3;
 }
+
+.btn-ver {
+    background-color: #28a745;
+    margin-top: 5px;
+}
+
+.btn-ver:hover {
+    background-color: #1e7e34;
+}
